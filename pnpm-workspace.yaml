@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+  - packages/*
+
+# pnpm blocks dependency install scripts unless listed here. None is needed:
+# - @parcel/watcher: optional native file watcher used by Jest.
+# - esbuild (via tsx): its prebuilt binary ships as @esbuild/<platform>; the script only verifies it.
+# - msgpackr-extract (via BullMQ): optional native speed-up; msgpackr falls back to JavaScript.
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  msgpackr-extract: false

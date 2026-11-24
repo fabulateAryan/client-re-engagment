@@ -1,0 +1,333 @@
+/* Clerk's styles sit in the "clerk" layer, before Tailwind's utilities, so our classes win. */
+@layer theme, base, clerk, components, utilities;
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-canvas: #f7f7fb;
+
+  /* Platform accents, darkened enough to read as text on white. */
+  --color-linkedin: #0a66c2;
+  --color-instagram: #d62976;
+  --color-tiktok: #161823;
+  --color-youtube: #c4302b;
+  --color-rss: #c2410c;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-canvas);
+  background-image:
+    radial-gradient(60rem 40rem at 10% -10%, rgb(124 58 237 / 0.08), transparent 60%),
+    radial-gradient(50rem 35rem at 100% 0%, rgb(34 211 238 / 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Subtle animated pulse for "live" dots. */
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-ping-soft {
+  animation: ping-soft 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.4s ease-out both;
+}
+
+/* Moving stripes on the run progress bar. */
+@keyframes stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 0;
+  }
+}
+
+.progress-stripes {
+  position: relative;
+}
+
+.progress-stripes::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: linear-gradient(
+    45deg,
+    rgb(255 255 255 / 0.22) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgb(255 255 255 / 0.22) 50%,
+    rgb(255 255 255 / 0.22) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 28px 28px;
+  animation: stripes 0.9s linear infinite;
+}
+
+/*
+ * Sign-in: Clerk draws its form a moment after the page appears. The slot keeps the form's
+ * height from the start, and the placeholder lies over it (not above it), so the card never
+ * shrinks or grows while switching tabs. The placeholder goes once Clerk's heading is drawn.
+ */
+.signin-slot {
+  position: relative;
+  min-height: 22.25rem;
+}
+
+.signin-skeleton {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.signin-slot:has(.cl-headerTitle) .signin-skeleton {
+  display: none;
+}
+
+.signin-slot .cl-rootBox {
+  animation: backdrop-fade 0.2s ease-out both;
+}
+
+/* Toast: a thin bar that empties while the toast is on screen. */
+@keyframes toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.toast-timer {
+  transform-origin: left;
+  animation: toast-timer linear forwards;
+}
+
+/* Confirmation dialog: pops in, backdrop fades in. */
+@keyframes dialog-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes backdrop-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-pop[open] {
+  animation: dialog-pop 0.18s ease-out both;
+}
+
+.dialog-pop[open]::backdrop {
+  animation: backdrop-fade 0.18s ease-out both;
+}
+
+/* Loading skeletons: grey blocks with a soft light sweeping across. */
+@keyframes skeleton-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #f1f5f9 35%,
+    #e2e8f0 50%,
+    #f1f5f9 65%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-stripes::after,
+  .animate-ping-soft,
+  .animate-rise,
+  .dialog-pop[open],
+  .dialog-pop[open]::backdrop,
+  .skeleton-shimmer {
+    animation: none;
+  }
+}
+
+/* ── Sign-in page motion ─────────────────────────────────────────────────── */
+
+/* Soft glow blobs drifting behind the brand panel. */
+@keyframes aurora {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -8%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-5%, 6%, 0) scale(0.94);
+  }
+}
+
+.animate-aurora {
+  animation: aurora 18s ease-in-out infinite;
+}
+
+/* Cards gently bobbing. */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--tilt, 0deg));
+  }
+  50% {
+    transform: translateY(-10px) rotate(var(--tilt, 0deg));
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Content arriving in sequence (set animation-delay inline). */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* A light sweep across the headline's highlighted words. */
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.text-shimmer {
+  background-image: linear-gradient(100deg, #ffffff 20%, #a5f3fc 40%, #ffffff 60%, #ddd6fe 80%);
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+/* Slowly moving dot grid. */
+@keyframes grid-pan {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 28px;
+  }
+}
+
+.bg-dot-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 0.18) 1px, transparent 1px);
+  background-size: 28px 28px;
+  animation: grid-pan 12s linear infinite;
+}
+
+/* The live dot on the sample signal. */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(16 185 129 / 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(16 185 129 / 0);
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora,
+  .animate-float,
+  .animate-fade-up,
+  .text-shimmer,
+  .bg-dot-grid,
+  .animate-pulse-ring {
+    animation: none;
+  }
+}
+
+/*
+ * Login page on laptops and desktops: always one screen, never a scrollbar. Below these
+ * heights the card and brand panel are scaled down a step at a time so they still fit
+ * (e.g. 1366x768 laptops, Windows display scaling, or browser zoom). Phones scroll normally.
+ */
+@media (min-width: 1024px) and (max-height: 720px) {
+  .auth-fit {
+    zoom: 0.92;
+  }
+}
+@media (min-width: 1024px) and (max-height: 660px) {
+  .auth-fit {
+    zoom: 0.85;
+  }
+}
+@media (min-width: 1024px) and (max-height: 600px) {
+  .auth-fit {
+    zoom: 0.77;
+  }
+}
+@media (min-width: 1024px) and (max-height: 540px) {
+  .auth-fit {
+    zoom: 0.68;
+  }
+}

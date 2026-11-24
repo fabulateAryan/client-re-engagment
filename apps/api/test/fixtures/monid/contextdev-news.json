@@ -1,0 +1,94 @@
+{
+  "runId": "01TESTRUN000000000000000000",
+  "provider": "x",
+  "endpoint": "/x",
+  "status": "COMPLETED",
+  "output": {
+    "data": [
+      {
+        "id": "a1",
+        "story_id": "story-1",
+        "url": "https://news.example.com/a1",
+        "title": "Placeholder Brand partners with a placeholder retailer",
+        "description": "Placeholder description.",
+        "language": "en",
+        "authors": ["Placeholder Journalist"],
+        "image_url": "https://news.example.com/a1.jpg",
+        "published_at": "2026-11-05T04:00:00.000Z",
+        "type": "editorial",
+        "source": {
+          "name": "Placeholder News",
+          "domain": "news.example.com",
+          "direct": true
+        },
+        "match": {
+          "level": "primary",
+          "confidence": 0.99
+        }
+      },
+      {
+        "id": "a2",
+        "story_id": "story-2",
+        "url": "https://news.example.com/a2",
+        "title": "Placeholder Brand announces results",
+        "description": "Placeholder.",
+        "language": "en",
+        "authors": [],
+        "published_at": "2026-11-04T04:00:00.000Z",
+        "type": "press_release",
+        "source": {
+          "name": "Placeholder Wire",
+          "domain": "wire.example.com"
+        },
+        "match": {
+          "level": "primary",
+          "confidence": 0.97
+        }
+      },
+      {
+        "id": "a3",
+        "story_id": "story-3",
+        "url": "https://news.example.com/a3",
+        "title": "Unrelated story that mentions Placeholder Brand in passing",
+        "language": "en",
+        "authors": ["Someone"],
+        "published_at": "2026-11-05T05:00:00.000Z",
+        "type": "editorial",
+        "source": {
+          "name": "Other News",
+          "domain": "other.example.com"
+        },
+        "match": {
+          "level": "secondary",
+          "confidence": 0.95
+        }
+      },
+      {
+        "id": "a4",
+        "url": "https://news.example.com/a4",
+        "title": "Primary match without story id falls back to id",
+        "published_at": "2026-11-03T04:00:00.000Z",
+        "type": "advisory",
+        "source": {
+          "name": "X",
+          "domain": "x.example.com"
+        },
+        "match": {
+          "level": "primary",
+          "confidence": 0.9
+        }
+      }
+    ],
+    "has_more": false,
+    "next_cursor": null,
+    "meta": {
+      "count": 4
+    }
+  },
+  "providerResponse": {
+    "httpStatus": 200
+  },
+  "billedUnits": 1,
+  "createdAt": "2026-11-01T00:00:00.000Z",
+  "completedAt": "2026-11-01T00:00:02.000Z"
+}

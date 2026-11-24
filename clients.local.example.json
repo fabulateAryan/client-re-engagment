@@ -1,0 +1,13 @@
+{
+  "clients": [
+    {
+      "id": "example-brand",
+      "name": "Example Brand",
+      "handles": {
+        "LINKEDIN": "https://www.linkedin.com/company/example-brand/",
+        "GOOGLE_RSS": "Example Brand"
+      },
+      "lastActiveDate": null
+    }
+  ]
+}

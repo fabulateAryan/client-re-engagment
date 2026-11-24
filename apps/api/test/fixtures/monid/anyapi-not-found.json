@@ -1,0 +1,17 @@
+{
+  "runId": "01TESTRUN000000000000000000",
+  "provider": "x",
+  "endpoint": "/x",
+  "status": "COMPLETED",
+  "output": {
+    "found": false,
+    "data": null,
+    "reason": "not_found"
+  },
+  "providerResponse": {
+    "httpStatus": 200
+  },
+  "billedUnits": 1,
+  "createdAt": "2026-11-01T00:00:00.000Z",
+  "completedAt": "2026-11-01T00:00:02.000Z"
+}

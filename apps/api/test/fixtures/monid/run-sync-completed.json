@@ -1,0 +1,41 @@
+{
+  "runId": "01TESTRUNSYNC0000000000000",
+  "provider": "example-provider",
+  "endpoint": "/example/linkedin-posts",
+  "status": "COMPLETED",
+  "output": [
+    {
+      "postId": "post-1001",
+      "kind": "hiring",
+      "text": "Placeholder text: we are hiring for a placeholder role.",
+      "postUrl": "https://example.com/posts/post-1001",
+      "postedAt": "2026-10-30T01:00:00.000Z",
+      "author": {
+        "name": "Placeholder Person",
+        "profileUrl": "https://example.com/in/placeholder"
+      },
+      "reactions": 12
+    },
+    {
+      "postId": "post-1002",
+      "kind": "something-new",
+      "text": "Placeholder text: an update of an unknown kind.",
+      "postUrl": "https://example.com/posts/post-1002",
+      "postedAt": "2026-10-31T01:00:00.000Z",
+      "author": {
+        "name": "Placeholder Person",
+        "profileUrl": "https://example.com/in/placeholder"
+      },
+      "reactions": 3
+    },
+    {
+      "kind": "hiring",
+      "text": "Placeholder text: item with no id, should be skipped."
+    }
+  ],
+  "providerResponse": { "httpStatus": 200 },
+  "price": { "type": "PER_CALL", "amount": { "value": 0, "currency": "USD" } },
+  "billedUnits": 1,
+  "createdAt": "2026-11-01T00:00:00.000Z",
+  "completedAt": "2026-11-01T00:00:01.000Z"
+}

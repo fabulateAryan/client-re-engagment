@@ -1,0 +1,8 @@
+{
+  "runId": "01TESTRUNASYNC000000000000",
+  "provider": "example-provider",
+  "endpoint": "/example/linkedin-posts",
+  "status": "READY",
+  "price": { "type": "PER_CALL", "amount": { "value": 0, "currency": "USD" } },
+  "createdAt": "2026-11-01T00:00:00.000Z"
+}

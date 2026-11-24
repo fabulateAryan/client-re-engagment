@@ -1,0 +1,28 @@
+{
+  "name": "signal-monitoring",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Signal Monitoring System: watches client social activity and turns signals into reviewed re-engagement messages.",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "postinstall": "pnpm --filter @signal-monitoring/shared build",
+    "dev:api": "pnpm --filter @signal-monitoring/api dev",
+    "dev:web": "pnpm --filter @signal-monitoring/web dev",
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "monid": "pnpm --filter @signal-monitoring/api monid",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm format:check"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}

@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# Environment files: never commit real secrets. Only .env.example is tracked.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
+
+# Real client list for local monitoring. Never commit it (see clients.local.example.json).
+clients.local.json

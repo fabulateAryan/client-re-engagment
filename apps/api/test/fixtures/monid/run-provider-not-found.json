@@ -1,0 +1,14 @@
+{
+  "runId": "01TESTRUNNOTFOUND000000000",
+  "provider": "example-provider",
+  "endpoint": "/example/linkedin-posts",
+  "status": "COMPLETED",
+  "output": null,
+  "providerResponse": {
+    "httpStatus": 404,
+    "error": { "status": 404, "message": "No match found" }
+  },
+  "billedUnits": 0,
+  "createdAt": "2026-11-01T00:00:00.000Z",
+  "completedAt": "2026-11-01T00:00:01.000Z"
+}

@@ -1,0 +1,65 @@
+{
+  "runId": "01TESTRUN000000000000000000",
+  "provider": "x",
+  "endpoint": "/x",
+  "status": "COMPLETED",
+  "output": {
+    "found": true,
+    "data": {
+      "items": [
+        {
+          "id": "7500000000000000001",
+          "text": "Placeholder: our new range launches today across Australia.",
+          "url": "https://example.com/posts/placeholder-brand_activity-7500000000000000001",
+          "shareUrl": "https://example.com/posts/placeholder-brand_activity-7500000000000000001",
+          "createdUtc": 1793800000,
+          "engagement": {
+            "likes": 120,
+            "comments": 8,
+            "shares": 5,
+            "reactions": {
+              "like": 100,
+              "praise": 20
+            }
+          },
+          "author": {
+            "id": "1",
+            "name": "Placeholder Brand",
+            "type": "company",
+            "universalName": "placeholder-brand",
+            "linkedinUrl": "https://example.com/company/placeholder-brand",
+            "image": "https://example.com/logo.png"
+          },
+          "postImages": [],
+          "postVideo": null
+        },
+        {
+          "id": "7500000000000000002",
+          "text": "Placeholder: we are hiring.",
+          "url": null,
+          "shareUrl": "https://example.com/posts/placeholder-brand_activity-7500000000000000002",
+          "createdUtc": 1793700000,
+          "engagement": {
+            "likes": 3,
+            "comments": 0,
+            "shares": 0
+          },
+          "author": {
+            "id": "1",
+            "name": "Placeholder Brand",
+            "type": "company"
+          }
+        },
+        {
+          "text": "Placeholder: item missing id and date, skipped."
+        }
+      ]
+    }
+  },
+  "providerResponse": {
+    "httpStatus": 200
+  },
+  "billedUnits": 1,
+  "createdAt": "2026-11-01T00:00:00.000Z",
+  "completedAt": "2026-11-01T00:00:02.000Z"
+}
