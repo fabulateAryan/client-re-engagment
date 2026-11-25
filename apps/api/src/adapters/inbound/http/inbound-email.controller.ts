@@ -16,6 +16,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { RecordInboundReplyUseCase } from '../../../core/application';
 import type { InboundEmail } from '../../../core/application';
 import { AppConfig } from '../../../config';
+import { addressesIn, htmlToText, idsIn } from '../../shared/email-text';
 import { Public } from './clerk-auth.guard';
 
 /** The form fields SendGrid Inbound Parse posts (default mode, not "raw"). */
@@ -116,30 +117,4 @@ function parseHeaders(raw: string): Map<string, string> {
     if (!map.has(name)) map.set(name, line.slice(colon + 1).trim());
   }
   return map;
-}
-
-/** "<a@b> <c@d>" -> ["a@b", "c@d"]. */
-function idsIn(value: string): string[] {
-  return [...value.matchAll(/<([^<>\s]+)>/g)].map((m) => m[1] ?? '').filter((id) => id !== '');
-}
-
-/** Plain addresses in a header like `"Name" <a@b.com>, c@d.com`, lower-cased. */
-function addressesIn(value: string): string[] {
-  return [...value.matchAll(/[^\s<>,;"']+@[^\s<>,;"']+/g)].map((m) => m[0].toLowerCase());
-}
-
-function htmlToText(html: string): string {
-  return html
-    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|li|tr|h\d)>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
 }

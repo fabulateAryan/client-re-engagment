@@ -7,17 +7,20 @@ import {
   Copy,
   LoaderCircle,
   Mail,
+  MessagesSquare,
   MessageSquareText,
+  Reply,
   RefreshCw,
   Save,
   Send,
   Undo2,
-  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatDate } from '../lib/format';
 import { OutreachThread } from './outreach-thread';
+import { Modal } from './modal';
 import { api } from '../lib/api-client';
+import { markRepliesSeen, useSeenReplies } from '../lib/seen-replies';
 import { cx } from './ui';
 
 const SOURCE_LABEL: Record<DraftResponse['source'], string> = {
@@ -76,9 +79,12 @@ function loadEmailSetup(): Promise<EmailSetup> {
 export function DraftPanel({
   signalId,
   initial,
+  brandName = null,
 }: {
   signalId: string;
   initial: DraftResponse | null;
+  /** Shown in the modal titles. */
+  brandName?: string | null;
 }) {
   const [draft, setDraft] = useState<DraftResponse | null>(initial);
   const [to, setTo] = useState(initial?.recipient ?? '');
@@ -94,6 +100,15 @@ export function DraftPanel({
   const [emailFrom, setEmailFrom] = useState<string | null>(null);
   const [repliesInApp, setRepliesInApp] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  /** The sent email's conversation, open in a modal. */
+  const [chatOpen, setChatOpen] = useState(false);
+  const seen = useSeenReplies();
+  const replyCount = (draft?.thread ?? []).filter((m) => m.direction === 'INBOUND').length;
+
+  // Reading the conversation marks its replies as read (also on the Outreach page).
+  useEffect(() => {
+    if (chatOpen && replyCount > 0) markRepliesSeen(signalId, replyCount);
+  }, [chatOpen, replyCount, signalId]);
 
   useEffect(() => {
     let live = true;
@@ -187,7 +202,11 @@ export function DraftPanel({
   /** Save any edits first, so exactly what is on screen is what gets emailed. */
   const sendEmail = async (): Promise<void> => {
     setConfirming(false);
-    if (await saveIfNeeded()) await run('send', () => api.sendDraft(signalId));
+    if ((await saveIfNeeded()) && (await run('send', () => api.sendDraft(signalId)))) {
+      // Sent: swap the editor for the conversation.
+      setExpanded(false);
+      setChatOpen(true);
+    }
   };
 
   const copy = async (): Promise<void> => {
@@ -201,13 +220,53 @@ export function DraftPanel({
   };
 
   if (sent && draft.sentVia === 'SENDGRID') {
+    const unread = Math.max(0, replyCount - (seen[signalId] ?? 0));
     return (
-      <OutreachThread
-        signalId={signalId}
-        draft={draft}
-        repliesInApp={repliesInApp}
-        onChange={apply}
-      />
+      <div className="mt-4 border-t border-slate-100 pt-3">
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+              <CircleCheck className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="truncate">Sent to {draft.recipient ?? 'the contact'}</span>
+            </p>
+            <p className="mt-0.5 truncate text-[11px] text-slate-500">
+              {replyCount === 0
+                ? 'Awaiting reply'
+                : replyCount === 1
+                  ? '1 reply'
+                  : `${replyCount} replies`}
+            </p>
+          </div>
+          {unread > 0 && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-sky-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+              <Reply className="h-3 w-3" aria-hidden />
+              {unread} new
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => setChatOpen(true)}
+            className={cx(smallButton, 'shrink-0 bg-violet-50 text-violet-700 hover:bg-violet-100')}
+          >
+            <MessagesSquare className="h-3.5 w-3.5" aria-hidden /> Open conversation
+          </button>
+        </div>
+        <Modal
+          open={chatOpen}
+          onClose={() => setChatOpen(false)}
+          title={brandName ?? draft.subject}
+          subtitle={brandName === null ? `To ${draft.recipient ?? ''}` : draft.subject}
+          fill
+        >
+          <OutreachThread
+            signalId={signalId}
+            draft={draft}
+            repliesInApp={repliesInApp}
+            onChange={apply}
+            fill
+          />
+        </Modal>
+      </div>
     );
   }
 
@@ -239,39 +298,25 @@ export function DraftPanel({
     );
   }
 
-  if (!expanded) {
-    return (
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
-        <p className="min-w-0 text-xs text-slate-500">
-          <span className="font-medium text-slate-700">Draft ready</span>
-          {unsaved && <span className="text-amber-700"> · unsaved changes</span>}
-          <span className="block truncate">Subject: {subject.trim() || draft.subject}</span>
-        </p>
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className={cx(smallButton, 'bg-violet-50 text-violet-700 hover:bg-violet-100')}
-        >
-          <MessageSquareText className="h-3.5 w-3.5" aria-hidden /> Open draft
-        </button>
-      </div>
-    );
-  }
+  const collapsed = (
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+      <p className="min-w-0 text-xs text-slate-500">
+        <span className="font-medium text-slate-700">Draft ready</span>
+        {unsaved && <span className="text-amber-700"> · unsaved changes</span>}
+        <span className="block truncate">Subject: {subject.trim() || draft.subject}</span>
+      </p>
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className={cx(smallButton, 'bg-violet-50 text-violet-700 hover:bg-violet-100')}
+      >
+        <MessageSquareText className="h-3.5 w-3.5" aria-hidden /> Open draft
+      </button>
+    </div>
+  );
 
-  return (
-    <div className="mt-4 space-y-2 border-t border-slate-100 pt-3">
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-slate-700">Email draft</p>
-        <button
-          type="button"
-          onClick={() => setExpanded(false)}
-          aria-label="Close draft"
-          title="Close. Your draft is kept."
-          className={cx(smallButton, 'text-slate-500 hover:bg-slate-100 hover:text-slate-900')}
-        >
-          <X className="h-3.5 w-3.5" aria-hidden /> Close
-        </button>
-      </div>
+  const editor = (
+    <div className="space-y-3">
       <label className="block text-xs font-medium text-slate-600">
         To
         <input
@@ -299,7 +344,7 @@ export function DraftPanel({
           id={`draft-${signalId}`}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          rows={9}
+          rows={12}
           maxLength={4000}
           className={cx(fieldClass, 'mt-1 resize-y leading-relaxed')}
         />
@@ -459,7 +504,7 @@ export function DraftPanel({
         {draft.editedAt !== null && `, edited ${formatDate(draft.editedAt)}`}.{' '}
         {emailFrom === null
           ? 'The email is sent from your own mailbox, not from this app.'
-          : `The email is sent from ${emailFrom} through SendGrid.`}
+          : `The email is sent from ${emailFrom}.`}
       </p>
       {error !== null && (
         <p role="alert" className="text-xs text-rose-700">
@@ -467,5 +512,19 @@ export function DraftPanel({
         </p>
       )}
     </div>
+  );
+
+  return (
+    <>
+      {collapsed}
+      <Modal
+        open={expanded}
+        onClose={() => setExpanded(false)}
+        title={brandName === null ? 'Email draft' : `Email draft for ${brandName}`}
+        subtitle="Close any time; your draft is kept."
+      >
+        {editor}
+      </Modal>
+    </>
   );
 }

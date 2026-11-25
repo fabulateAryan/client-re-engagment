@@ -3,7 +3,7 @@
  * To swap a fake for a real adapter, change the binding here; the core does not change.
  */
 import { verifyToken } from '@clerk/backend';
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import type { OnApplicationShutdown, Provider } from '@nestjs/common';
 import type { Redis } from 'ioredis';
@@ -50,6 +50,9 @@ import {
   DisabledEmailSender,
   SendGridEmailAdapter,
 } from './adapters/outbound/email/sendgrid-email.adapter';
+import { GmailApiClient } from './adapters/outbound/email/gmail/gmail-api.client';
+import { GmailEmailAdapter } from './adapters/outbound/email/gmail/gmail-email.adapter';
+import { GmailReplyPoller } from './adapters/inbound/jobs/gmail-reply.poller';
 import { createMonidSource } from './adapters/outbound/monid';
 import { AppConfig, loadAppConfig } from './config';
 import type { MonidEndpointSetting, SourceMode } from './config';
@@ -85,6 +88,8 @@ import {
   DraftRepositoryPort,
   EmailSenderPort,
   MessagePort,
+  NoReplyInbox,
+  ReplyInboxPort,
   MonitoringRunRepositoryPort,
   NotifierPort,
   SignalQueryPort,
@@ -102,6 +107,8 @@ interface SourceRegistration {
   readonly label: string;
 }
 const SOURCE_REGISTRATIONS = Symbol('SOURCE_REGISTRATIONS');
+/** The Gmail API client, or null when Gmail is not set up. */
+const GMAIL_CLIENT = Symbol('GMAIL_CLIENT');
 
 /**
  * The one place sources are registered. Adding a platform is one more entry here
@@ -366,12 +373,50 @@ const portProviders: Provider[] = [
     inject: [AppConfig, RedisHandle],
   },
   {
-    provide: EmailSenderPort,
-    useFactory: (config: AppConfig): EmailSenderPort =>
-      config.sendGrid === null
-        ? new DisabledEmailSender()
-        : new SendGridEmailAdapter(config.sendGrid),
+    provide: GMAIL_CLIENT,
+    useFactory: (config: AppConfig): GmailApiClient | null =>
+      config.gmail === null ? null : new GmailApiClient(config.gmail),
     inject: [AppConfig],
+  },
+  {
+    provide: EmailSenderPort,
+    // Gmail wins when set up; then SendGrid; otherwise reps send from their own mailbox.
+    useFactory: (config: AppConfig, gmail: GmailApiClient | null): EmailSenderPort => {
+      const logger = new Logger('Email');
+      if (config.gmail !== null && gmail !== null) {
+        logger.log(`Sending and receiving through Gmail as ${config.gmail.fromEmail}.`);
+        return new GmailEmailAdapter(gmail, config.gmail);
+      }
+      if (config.sendGrid !== null) {
+        logger.log(`Sending through SendGrid as ${config.sendGrid.fromEmail}.`);
+        return new SendGridEmailAdapter(config.sendGrid);
+      }
+      return new DisabledEmailSender();
+    },
+    inject: [AppConfig, GMAIL_CLIENT],
+  },
+  {
+    provide: GmailReplyPoller,
+    // Only with Gmail: reads replies from the inbox into their outreach thread.
+    useFactory: (
+      config: AppConfig,
+      gmail: GmailApiClient | null,
+      record: RecordInboundReplyUseCase,
+    ): GmailReplyPoller | null =>
+      config.gmail === null || gmail === null
+        ? null
+        : new GmailReplyPoller(gmail, record, {
+            intervalMs: config.gmail.pollIntervalMs,
+            lookbackDays: 14,
+            batchSize: 50,
+          }),
+    inject: [AppConfig, GMAIL_CLIENT, RecordInboundReplyUseCase],
+  },
+  {
+    provide: ReplyInboxPort,
+    // "Check for replies" reads the Gmail inbox straight away; without Gmail it does nothing.
+    useFactory: (poller: GmailReplyPoller | null): ReplyInboxPort => poller ?? new NoReplyInbox(),
+    inject: [GmailReplyPoller],
   },
   {
     provide: SendDraftEmailUseCase,

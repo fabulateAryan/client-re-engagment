@@ -167,7 +167,13 @@ function SignalsView({
               <SignalCard
                 signal={signal}
                 action={<SkipButton signalId={signal.id} skipped={signal.skippedAt !== null} />}
-                footer={<DraftPanel signalId={signal.id} initial={signal.draft} />}
+                footer={
+                  <DraftPanel
+                    signalId={signal.id}
+                    initial={signal.draft}
+                    brandName={signal.clientName}
+                  />
+                }
               />
             </li>
           ))}

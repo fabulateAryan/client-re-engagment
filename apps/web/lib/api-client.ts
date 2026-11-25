@@ -153,6 +153,13 @@ export function createApi(getToken: TokenGetter) {
     runs: (limit = 20) => getJson<MonitoringRunListResponse>(`/monitoring/runs?limit=${limit}`),
     /** Every email thread sent from the app, most recent activity first. */
     outreach: () => getJson<OutreachListResponse>('/outreach'),
+    /** Reads the reply inbox now (not on the next timed check), then lists every thread. */
+    checkReplies: () =>
+      getJson<OutreachListResponse>(
+        '/outreach/check-replies',
+        { method: 'POST' },
+        DRAFT_TIMEOUT_MS,
+      ),
     signalSummary: () => getJson<SignalSummaryResponse>('/signals/summary'),
     signals: (filters: SignalFilters = {}) => {
       const params = new URLSearchParams();

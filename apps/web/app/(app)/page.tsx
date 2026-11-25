@@ -54,7 +54,7 @@ import { SIGNAL_TYPES } from '../../lib/meta';
 /** The API's largest page; the plan is worked out from this many top-ranked signals. */
 const SIGNAL_SAMPLE = 100;
 /** Brands shown in "Contact today". */
-const CONTACT_LIMIT = 8;
+const CONTACT_LIMIT = 5;
 /** A run older than this is flagged as stale. */
 const STALE_RUN_DAYS = 2;
 /** A thread with no reply this long after the last email is due a follow-up. */
@@ -350,7 +350,7 @@ function NeedsYouNow({
           <MailCheck className="h-4 w-4 text-emerald-600" aria-hidden />
           {repliesInApp
             ? 'No replies waiting. New replies show up here as soon as they arrive.'
-            : 'No replies yet. Replies appear here once SendGrid Inbound Parse is connected.'}
+            : 'No replies yet. Replies appear here once Gmail or SendGrid Inbound Parse is connected.'}
         </div>
       ) : (
         <ul className="divide-y divide-slate-100">
@@ -563,7 +563,7 @@ function BrandStatus({ view, threads }: { view: ManagerView; threads: OutreachTh
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {sorted.slice(0, 10).map((row) => {
+              {sorted.slice(0, 5).map((row) => {
                 const status = BRAND_STATUS[row.status];
                 return (
                   <tr key={row.key}>

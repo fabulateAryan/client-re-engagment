@@ -17,12 +17,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { durationBetween, formatDuration, plural } from '../lib/format';
 import { PLATFORMS } from '../lib/meta';
 import { runProgress, useRunState } from '../lib/run-progress';
 import type { RunState } from '../lib/run-progress';
 import { PlatformLogo, cx } from './ui';
+
+/** Shortest gap between page reloads while a run is still saving new signals. */
+const LIVE_REFRESH_MS = 5_000;
 
 /** Floating panel, on every page, that follows the monitoring run from start to finish. */
 export function RunProgressPanel() {
@@ -38,6 +41,27 @@ export function RunProgressPanel() {
   useEffect(() => {
     if (state.phase === 'done') startTransition(() => router.refresh());
   }, [state.phase, router]);
+
+  // During a run, show new signals as soon as a check saves some, instead of only at the end.
+  // At most one reload every few seconds, however many checks finish in between.
+  const savedSoFar =
+    state.phase === 'running'
+      ? (state.progress?.completed ?? []).reduce((sum, c) => sum + c.newSignalsSaved, 0)
+      : 0;
+  const lastRefresh = useRef({ saved: 0, at: 0 });
+  useEffect(() => {
+    if (savedSoFar === 0) {
+      lastRefresh.current = { saved: 0, at: 0 };
+      return;
+    }
+    if (savedSoFar <= lastRefresh.current.saved) return;
+    const wait = Math.max(0, lastRefresh.current.at + LIVE_REFRESH_MS - Date.now());
+    const timer = setTimeout(() => {
+      lastRefresh.current = { saved: savedSoFar, at: Date.now() };
+      startTransition(() => router.refresh());
+    }, wait);
+    return () => clearTimeout(timer);
+  }, [savedSoFar, router]);
 
   // Results stay up for a while, then tidy themselves away.
   useEffect(() => {

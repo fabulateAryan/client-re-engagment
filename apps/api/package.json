@@ -12,7 +12,8 @@
     "test:cov": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js --coverage",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
-    "monid": "tsx src/cli/monid-explore.ts"
+    "monid": "tsx src/cli/monid-explore.ts",
+    "gmail:auth": "tsx src/cli/gmail-auth.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

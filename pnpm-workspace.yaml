@@ -10,3 +10,6 @@ allowBuilds:
   '@parcel/watcher': false
   esbuild: false
   msgpackr-extract: false
+
+# Hide the "Update available" banner; the pnpm version is pinned via packageManager.
+updateNotifier: false

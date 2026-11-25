@@ -63,6 +63,19 @@ const envSchema = z.object({
   /** Secret in the Inbound Parse URL, so only SendGrid can post replies. 24+ characters. */
   SENDGRID_INBOUND_KEY: optionalString,
 
+  /**
+   * Gmail, for the "Send" button and for replies in the app. When all four are set, Gmail is
+   * used instead of SendGrid. Get GMAIL_REFRESH_TOKEN (and GMAIL_FROM_EMAIL) with
+   * `pnpm --filter @signal-monitoring/api gmail:auth`. Replies come back by plus addressing
+   * (<mailbox>+<token>@gmail.com) and are read from the inbox every GMAIL_POLL_SECONDS.
+   */
+  GMAIL_CLIENT_ID: optionalString,
+  GMAIL_CLIENT_SECRET: optionalString,
+  GMAIL_REFRESH_TOKEN: optionalString,
+  GMAIL_FROM_EMAIL: optionalString,
+  GMAIL_FROM_NAME: z.string().trim().min(1).default('Fabulate'),
+  GMAIL_POLL_SECONDS: z.coerce.number().int().min(10).default(15),
+
   MONID_API_KEY: optionalString,
   /** Documented base URL: https://monid.ai/docs/api/overview */
   MONID_BASE_URL: z.url().default('https://api.monid.ai'),
@@ -234,6 +247,18 @@ export interface AppConfigValues {
   readonly recheckAfterMinutes?: number;
   /** Missing or null: the app does not send email. */
   readonly sendGrid?: SendGridConfig | null;
+  /** Missing or null: Gmail is not used. Wins over SendGrid when set. */
+  readonly gmail?: GmailConfig | null;
+}
+
+/** Email sending and replies through a Gmail mailbox (Gmail API, OAuth refresh token). */
+export interface GmailConfig {
+  readonly clientId: string;
+  readonly clientSecret: string;
+  readonly refreshToken: string;
+  readonly fromEmail: string;
+  readonly fromName: string;
+  readonly pollIntervalMs: number;
 }
 
 /** Email sending through SendGrid. */
@@ -269,6 +294,7 @@ export class AppConfig implements AppConfigValues {
   readonly lookbackDays: number;
   readonly recheckAfterMinutes: number;
   readonly sendGrid: SendGridConfig | null;
+  readonly gmail: GmailConfig | null;
 
   constructor(values: AppConfigValues) {
     this.nodeEnv = values.nodeEnv;
@@ -289,6 +315,7 @@ export class AppConfig implements AppConfigValues {
     this.lookbackDays = values.lookbackDays ?? 0;
     this.recheckAfterMinutes = values.recheckAfterMinutes ?? 0;
     this.sendGrid = values.sendGrid ?? null;
+    this.gmail = values.gmail ?? null;
   }
 }
 
@@ -344,6 +371,20 @@ export function loadAppConfig(
             sandbox: values.SENDGRID_SANDBOX,
             inboundDomain: values.SENDGRID_INBOUND_DOMAIN?.toLowerCase() ?? null,
             inboundKey: values.SENDGRID_INBOUND_KEY ?? null,
+          },
+    gmail:
+      values.GMAIL_CLIENT_ID === undefined ||
+      values.GMAIL_CLIENT_SECRET === undefined ||
+      values.GMAIL_REFRESH_TOKEN === undefined ||
+      values.GMAIL_FROM_EMAIL === undefined
+        ? null
+        : {
+            clientId: values.GMAIL_CLIENT_ID,
+            clientSecret: values.GMAIL_CLIENT_SECRET,
+            refreshToken: values.GMAIL_REFRESH_TOKEN,
+            fromEmail: values.GMAIL_FROM_EMAIL.toLowerCase(),
+            fromName: values.GMAIL_FROM_NAME,
+            pollIntervalMs: values.GMAIL_POLL_SECONDS * 1000,
           },
     clerk:
       values.CLERK_SECRET_KEY === undefined

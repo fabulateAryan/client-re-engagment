@@ -11,3 +11,4 @@ export * from './signal-query.port';
 export * from './monitoring-lock.port';
 export * from './check-job-queue.port';
 export * from './email-sender.port';
+export * from './reply-inbox.port';
